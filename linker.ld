@@ -9,7 +9,6 @@ SECTIONS
     /* bloque de código ejecutable principal */
     .text : ALIGN(4K)
     {
-        /* forzamos a la cabecera multiboot a ir al inicio absoluto del archivo */
         *(.multiboot)
         *(.text)
     }

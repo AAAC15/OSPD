@@ -2,10 +2,10 @@
 #include "shell.h"
 #include "keyboard.h" 
 
-/* declaracion externa de la funcion encargada de procesar el buffer de comandos */
-/* extern void cmd(const char* bufer, int* offset, int* sector, char* path); */
+// activamos la declaracion externa del modulo parser
+extern void cmd(char* buffer, int* actualoffset, int* currentSector, char* currentPath);
 
-typedef unsigned short uint16_t; // 2B
+typedef unsigned short uint16_t; // 2b
 
 /* puntero base a la memoria fisica vga y atributos de color por defecto */
 #define VIDEOPOINTER 0xB8000
@@ -13,14 +13,45 @@ typedef unsigned short uint16_t; // 2B
 #define BLACKNWHITE  0x0F
 
 /* prompt del sistema operativo y ruta inicial por defecto en formato crudo */
-static const char prompt[] = {'O', 'S', 'P', 'D', '>', ' ', 0};
-static char current_path[] = {'/', 'u', 's', 'r', '/', 'i', 'n', 'v', 'i', 't', 'a', 'd', 'o', 0};
+static char currentPath[256] = {'/', 0};
+
+// funcion auxiliar local para dibujar el prompt compuesto dinamico
+static int drawDynamicPrompt(char* videomem, int offset) {
+    int idx = offset;
+    
+    char base[] = {'O', 'S', 'P', 'D', 0};
+    int i = 0;
+    while (base[i] != 0) {
+        videomem[idx] = base[i];
+        videomem[idx + 1] = BLACKNCYAN;
+        i++;
+        idx += 2;
+    }
+    
+    i = 0;
+    while (currentPath[i] != 0) {
+        videomem[idx] = currentPath[i];
+        videomem[idx + 1] = BLACKNCYAN;
+        i++;
+        idx += 2;
+    }
+    
+    char close[] = {'>', ' ', 0};
+    i = 0;
+    while (close[i] != 0) {
+        videomem[idx] = close[i];
+        videomem[idx + 1] = BLACKNCYAN;
+        i++;
+        idx += 2;
+    }
+    
+    return idx;
+}
 
 /* actualiza la posicion del cursor de hardware de la vga mediante puertos crudos crt */
 static void vgacursorfollowing(int cursorpos) {
     unsigned short position = (unsigned short)(cursorpos / 2);
     
-    /* creamos variables limpias para los puertos para no confundir a gcc */
     uint16_t port3d4 = 0x3D4;
     uint16_t port3d5 = 0x3D5;
     unsigned char reg0f = 0x0F;
@@ -39,18 +70,11 @@ void shell_main(void) {
     
     /* offset inicial de 640 bytes equivalente a arrancar en la linea 5 exacta */
     int offset = 640; 
-    int current_sector = 56;
+    int currentSector = 60; 
 
-    /* bucle para dibujar el prompt inicial con el esquema de color seleccionado */
-    int start_idx = 0;
-    while (prompt[start_idx] != 0) {
-        videomem[offset + (start_idx * 2)] = prompt[start_idx];
-        videomem[offset + (start_idx * 2) + 1] = BLACKNCYAN;
-        start_idx++;
-    }
-
-    /* calculo de la posicion inicial del cursor sumando el espacio del prompt */
-    int cursorpos = offset + 12;
+    /* bucle para dibujar el prompt inicial */
+    int cursorpos = drawDynamicPrompt(videomem, offset);
+    int promptLengthBytes = cursorpos - offset;
     vgacursorfollowing(cursorpos);
     
     /* inicializacion del buffer local para la captura de texto */
@@ -58,7 +82,7 @@ void shell_main(void) {
     int bufidx = 0;
     
     while(1) {
-        /* invocamos al driver del teclado para obtener el caracter ascii ya procesado */
+        /* llamamos al driver pa procesar la tecla */
         char key = getAscii();
         
         /* si no hay pulsaciones del hardware volvemos a evaluar el ciclo */
@@ -70,7 +94,7 @@ void shell_main(void) {
             
             /* caso 1: manejo del backspace para borrar caracteres de la pantalla */
             if (key == 8) {
-                if (cursorpos > (offset + 12)) {
+                if (cursorpos > (offset + promptLengthBytes)) {
                     cursorpos -= 2; 
                     vgacursorfollowing(cursorpos);
                     videomem[cursorpos] = 0x20;    
@@ -85,11 +109,10 @@ void shell_main(void) {
             else if (key == 10) {
                 cmdbuffer[bufidx] = 0;   
                 
-                /* despachamos el comando al modulo del parser central */
-                /* cmd(cmdbuffer, &offset, &current_sector, current_path); */
-                bufidx = 0;              
+                /* ¡ACTIVAMOS LA LLAMADA AL PARSER DE COMANDOS! */
+                cmd(cmdbuffer, &offset, &currentSector, currentPath); 
                 
-                offset += 160;
+                bufidx = 0;              
                 
                 /* rutina de scroll vertical en caso de llegar al limite de la vga (3840 bytes) */
                 if (offset >= 3840) {
@@ -104,14 +127,8 @@ void shell_main(void) {
                 }
                 
                 /* redibujamos el prompt del sistema al inicio de la nueva linea */
-                int prompt_idx = 0;
-                while (prompt[prompt_idx] != 0) {
-                    videomem[offset + (prompt_idx * 2)] = prompt[prompt_idx];
-                    videomem[offset + (prompt_idx * 2) + 1] = BLACKNCYAN;
-                    prompt_idx++;
-                }
-                
-                cursorpos = offset + 12;
+                cursorpos = drawDynamicPrompt(videomem, offset);
+                promptLengthBytes = cursorpos - offset;
                 vgacursorfollowing(cursorpos);
             }
             
@@ -129,7 +146,7 @@ void shell_main(void) {
         }
     } 
     
-    /* lazo de seguridad final para contener la cpu ante un fallo critico de salida */
+    /* porr las dudas si pasa algo con la cpu metemos halt */
     while(1) {
         __asm__ __volatile__("hlt");
     }
