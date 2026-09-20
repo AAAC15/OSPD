@@ -14,36 +14,35 @@ Uso el estandar MultiBoot para el gestor de arranque GRUB (el de casi todos los 
 Lo hice para no lidiar con el salto de 16 a 32 bits a cada rato.
 
 ## kernel/...: Archivos de kernel
-Aca estoy desarrollando los respectivos archivos del kernel, (fs/ esta vacio, espeeeren) donde tengo pensado
+Aca estoy desarrollando los respectivos archivos del kernel, donde tengo pensado
 inspirarme en sistemas operativos UNIX-like para gestion de procesos, pipes, binarios y archivos (tengo un fanatismo por
 los linux y su estructura)
+El `panic.c` tiene el sistema de panico, el cual se puede inducir poniendo `panic` en el sistema.
+
+## kernel/fs/...: File System
+El sistema de archivos y estructura de carpetas y archivos!
+Aca me vengo influenciando bastante de unix, sobre las carpetas como archivos, etc.
+Tengo que admitir que los errores me los arreglo bastante la IA peeero bueno, ¿que se le va a hacer?
+
+## kernel/drivers/...: Drivers
+Por ahora aca solo meti los drivers de ATA PIO y del chip de teclado Intel 8042.
+Es funcional, no dio problemas, asi que le tengo confianza
 
 ## shell/...: La shell
-La procesadora de comandos, por ahora solo muestra un prompt y tiene funcionalidades basicas del enter
-y del backspace. Aca voy a implementar un cmd.c para el procesado de comandos y busqueda de binarios en disco.
+En `shell.c` esta la interfaz grafica, con lo que interactua el usuario.
+En `cmd.c` esta el parser y el cerebro de los comandos, ademas del buscador de binarios en /sys/bin
+Funciona guardando un buffer y pasando este al procesador de comandos, quien ejecuta las ordenes.
 
 ## headers/...: Cabeceras
-Aca van todas las cabeceras. Y ya. Nada mas, solo interconeccion de .c's.
+Aca van todas las cabeceras. Y ya. Nada mas, solo interconexion de .c's.
 
 ## Herramientas de trabajo
 Por ahora uso NASM para assembly y GCC para c. Uso QEMU para emulacion porque es ligerisimo (mi pc
 tiene 4gb de ram y un i5 de 4ta, sepan comprender)
 
 ## Como lo corro?
-Como no se nada de flags de compiladores, la bendita IA me hizo este codigo:
-
-```
-nasm -f elf32 kernel/boot/head.asm -o head.o
-/usr/bin/gcc -c kernel/kernel.c -o kernel.o -m32 -nostdlib -ffreestanding -O0 -no-pie -fno-asynchronous-unwind-tables -fno-stack-protector -I./headers
-/usr/bin/gcc -c kernel/panic.c -o panic.o -m32 -nostdlib -ffreestanding -O0 -no-pie -fno-asynchronous-unwind-tables -fno-stack-protector -I./headers
-/usr/bin/gcc -c kernel/drivers/atadisk.c -o atadisk.o -m32 -nostdlib -ffreestanding -O0 -no-pie -fno-asynchronous-unwind-tables -fno-stack-protector -I./headers
-/usr/bin/gcc -c kernel/drivers/keyboard.c -o keyboard.o -m32 -nostdlib -ffreestanding -O0 -no-pie -fno-asynchronous-unwind-tables -fno-stack-protector -I./headers
-/usr/bin/gcc -c shell/shell.c -o shell.o -m32 -nostdlib -ffreestanding -O0 -no-pie -fno-asynchronous-unwind-tables -fno-stack-protector -I./headers
-/usr/bin/gcc -T linker.ld -m32 -nostdlib head.o kernel.o panic.o atadisk.o keyboard.o shell.o -o mykernel.bin -no-pie -Wl,-n -Wl,-z,max-page-size=4096
-rm head.o kernel.o panic.o atadisk.o keyboard.o shell.o
-qemu-system-i386 -kernel mykernel.bin
-```
-
+Como no se nada de flags de compiladores, la bendita IA me hizo el Makefile.
+Con poner `make clean && make` en la carpeta en la q tengan el codigo deberia arrancar
 Copien y peguen, con eso me arranco
 
 ## Abierto a sugerencias!
