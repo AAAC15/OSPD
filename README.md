@@ -4,6 +4,8 @@ Un OS de 32 bits que hice por meros propositos educacionales, se nota todavia qu
 Makefile esta vacio, y que ademas, no tiene comandos funcionales (es una shell triste)
 
 Como se hace notar, todavia esta en desarrollo, y tengo ciertas ideas para su posterior avance.
+Tengo reciclados ciertos archivos (los que estan en lowercase) porque ya estaba intentando desarrollar
+un OS antes. Muchas batallas, lo rehice desde 0.
 
 Vamos con ciertos puntos:
 
