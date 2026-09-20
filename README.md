@@ -1,7 +1,7 @@
 # OSPD: the Operating System of the Petted Dodo
 
 Un OS de 32 bits que hice por meros propositos educacionales, se nota todavia que, en primer lugar, el 
-Makefile esta vacio, y que ademas, no tiene comandos funcionales (es una shell triste)
+Makefile esta vacio, y que los comandos son basiquitos (es una shell triste)
 
 Como se hace notar, todavia esta en desarrollo, y tengo ciertas ideas para su posterior avance.
 Tengo reciclados ciertos archivos (los que estan en lowercase) porque ya estaba intentando desarrollar
@@ -44,6 +44,16 @@ tiene 4gb de ram y un i5 de 4ta, sepan comprender)
 Como no se nada de flags de compiladores, la bendita IA me hizo el Makefile.
 Con poner `make clean && make` en la carpeta en la q tengan el codigo deberia arrancar
 Copien y peguen, con eso me arranco
+
+## Como lo uso?
+Los comandos q puse son simplisimos, son:  
+`lp`: Limpiar Pantalla  
+`ìmp "texto"`: Imprimir en pantalla  
+`idt`: Imprimir Directorio de Trabajo  
+`ir`: Ir a... (cd)  
+`nd`: Nuevo Directorio  
+`na`: Nuevo Archivo  
+`ls`: Listar  
 
 ## Abierto a sugerencias!
 Quien quiera hacer recomendaciones sobre el codigo: bienvenido sea!
