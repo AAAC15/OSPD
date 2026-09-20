@@ -3,3 +3,5 @@
 *.iso
 iso_root/
 .DS_Store
+*.txt
+*.img
